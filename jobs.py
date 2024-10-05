@@ -3,13 +3,12 @@ import random
 from tkinter import messagebox, Toplevel
 from PIL import Image, ImageTk
 from langchain_ollama import OllamaLLM
-from langchain_core.prompts import ChatPromptTemplate
 
-model = OllamaLLM(model = "llama3")
+model = OllamaLLM(model="llama3")
 
 
 class Ameba:
-    def __init__(self, root):
+    def __init__(self, root, attempts=None):
         self.root = root
         self.root.title("Угадай число with AI")
         self.root.configure(bg='black')
@@ -18,6 +17,8 @@ class Ameba:
         self.secret_number = random.randint(self.min_value, self.max_value)
         self.tries = 0
         self.last_guess = None
+        self.max_attempts = attempts
+        self.attempts_left = attempts
         self.create_widgets()
 
     def create_widgets(self):
@@ -35,6 +36,14 @@ class Ameba:
         self.result_label = tk.Label(self.root, text="", bg='black', fg='orange', font=("Arial", 12))
         self.result_label.pack(pady=10)
 
+        if self.max_attempts is not None:
+            self.attempts_frame = tk.Frame(self.root, bg='black')
+            self.attempts_frame.pack(pady=10)
+            self.attempts_labels = [tk.Label(self.attempts_frame, bg='red', width=4, height=2)
+                                    for _ in range(self.max_attempts)]
+            for label in self.attempts_labels:
+                label.pack(side=tk.LEFT, padx=5)
+
     def check_guess(self):
         guess = self.entry.get()
         if not guess.isdigit():
@@ -51,13 +60,24 @@ class Ameba:
         else:
             self.show_celebration()
             self.reset_game()
+            return
+
+        if self.max_attempts is not None:
+            self.update_attempts()
 
         self.last_guess = guess
 
     def get_prompt(self, guess):
-        distance = abs(guess - self.secret_number)
-        result = model.invoke(input=f"Число загадано {self.secret_number}, я ввел {guess}. Не называй загаданное число. Я близок или нет? дай подсказку до 5 слов. Ответ на русском")
-        return result 
+        result = model.invoke(input=f"Число загадано, я ввел {guess}. Не называй загаданное число. Я близок или нет? дай подсказку до 5 слов. Ответ на русском")
+        return result
+
+    def update_attempts(self):
+        if self.attempts_left > 0:
+            self.attempts_labels[self.max_attempts - self.attempts_left].config(bg='black')
+            self.attempts_left -= 1
+        if self.attempts_left == 0:
+            messagebox.showinfo("Конец игры", "Вы исчерпали все попытки!")
+            self.reset_game()
 
     def show_celebration(self):
         celebration_window = Toplevel(self.root)
@@ -73,19 +93,19 @@ class Ameba:
         gif_path = "russiaflag.gif"
         img = Image.open(gif_path)
         frames = []
-        num_frames = img.n_frames 
+        num_frames = img.n_frames
         for frame_index in range(num_frames):
             img.seek(frame_index)
-            frame = ImageTk.PhotoImage(img.copy())  
+            frame = ImageTk.PhotoImage(img.copy())
             frames.append(frame)
 
         gif_label = tk.Label(window, bg='black')
         gif_label.pack()
 
         def update_frame(index):
-            gif_label.config(image=frames[index]) 
-            index = (index + 1) % num_frames 
-            window.after(100, update_frame, index) 
+            gif_label.config(image=frames[index])
+            index = (index + 1) % num_frames
+            window.after(100, update_frame, index)
         window.after(0, update_frame, 0)
 
     def reset_game(self):
@@ -94,8 +114,38 @@ class Ameba:
         self.last_guess = None
         self.result_label.config(text="")
         self.entry.delete(0, tk.END)
+        if self.max_attempts is not None:
+            self.attempts_left = self.max_attempts
+            for label in self.attempts_labels:
+                label.config(bg='red')
+
+
+def start_game(mode):
+    root = tk.Toplevel()
+    if mode == "no_attempts":
+        Ameba(root)
+    elif mode == "three_attempts":
+        Ameba(root, attempts=3)
+
+
+def show_mode_selection():
+    selection_window = tk.Tk()
+    selection_window.title("Выбор режима игры")
+    selection_window.configure(bg='black')
+
+    label = tk.Label(selection_window, text="Выберите режим игры:", bg='black', fg='orange', font=("Arial", 14))
+    label.pack(pady=10)
+
+    no_attempts_button = tk.Button(selection_window, text="Играть без попыток", command=lambda: start_game("no_attempts"),
+                                   bg='black', fg='orange', font=("Arial", 12))
+    no_attempts_button.pack(pady=5)
+
+    three_attempts_button = tk.Button(selection_window, text="Играть с 3 попытками", command=lambda: start_game("three_attempts"),
+                                      bg='black', fg='orange', font=("Arial", 12))
+    three_attempts_button.pack(pady=5)
+
+    selection_window.mainloop()
+
 
 if __name__ == "__main__":
-    root = tk.Tk()
-    game = Ameba(root)
-    root.mainloop()
+    show_mode_selection()
