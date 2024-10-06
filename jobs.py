@@ -120,7 +120,8 @@ class Ameba:
                 label.config(bg='red')
 
 
-def start_game(mode):
+def start_game(mode, selection_window):
+    selection_window.destroy()  # Закрыть окно выбора режима
     root = tk.Toplevel()
     if mode == "no_attempts":
         Ameba(root)
@@ -136,11 +137,13 @@ def show_mode_selection():
     label = tk.Label(selection_window, text="Выберите режим игры:", bg='black', fg='orange', font=("Arial", 14))
     label.pack(pady=10)
 
-    no_attempts_button = tk.Button(selection_window, text="Играть без попыток", command=lambda: start_game("no_attempts"),
+    no_attempts_button = tk.Button(selection_window, text="Играть без попыток", 
+                                   command=lambda: start_game("no_attempts", selection_window),
                                    bg='black', fg='orange', font=("Arial", 12))
     no_attempts_button.pack(pady=5)
 
-    three_attempts_button = tk.Button(selection_window, text="Играть с 3 попытками", command=lambda: start_game("three_attempts"),
+    three_attempts_button = tk.Button(selection_window, text="Играть с 3 попытками", 
+                                      command=lambda: start_game("three_attempts", selection_window),
                                       bg='black', fg='orange', font=("Arial", 12))
     three_attempts_button.pack(pady=5)
 
