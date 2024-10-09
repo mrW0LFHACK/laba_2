@@ -68,7 +68,7 @@ class Ameba:
         self.last_guess = guess
 
     def get_prompt(self, guess):
-        result = model.invoke(input=f"Число что загадано это{self.secret_number}, я ввел {guess}. Дай краткую подсказку, чтобы я смог назвать нужное.Ответ на русском языке.")
+        result = model.invoke(input=f"Число что загадано это{self.secret_number}, я ввел {guess}. Дай краткую подсказку(не более 7 слов), чтобы я смог назвать нужное. Но не говори загаданное число. Ответ на русском языке.")
         print(self.secret_number)
         return result
 
