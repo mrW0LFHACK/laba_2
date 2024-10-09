@@ -68,12 +68,14 @@ class Ameba:
         self.last_guess = guess
 
     def get_prompt(self, guess):
-        result = model.invoke(input=f"Число загадано, я ввел {guess}. Не называй загаданное число. Я близок или нет? дай подсказку до 5 слов. Ответ на русском")
+        result = model.invoke(input=f"Число что загадано это{self.secret_number}, я ввел {guess}. Дай краткую подсказку, чтобы я смог назвать нужное.Ответ на русском языке.")
+        print(self.secret_number)
         return result
 
     def update_attempts(self):
         if self.attempts_left > 0:
-            self.attempts_labels[self.max_attempts - self.attempts_left].config(bg='black')
+            # Находим самую правую красную клетку и закрашиваем её черным
+            self.attempts_labels[self.attempts_left - 1].config(bg='black')
             self.attempts_left -= 1
         if self.attempts_left == 0:
             messagebox.showinfo("Конец игры", "Вы исчерпали все попытки!")
@@ -120,17 +122,16 @@ class Ameba:
                 label.config(bg='red')
 
 
-def start_game(mode, selection_window):
-    selection_window.destroy()  # Закрыть окно выбора режима
-    root = tk.Toplevel()
+def start_game(mode):
+    game_window = tk.Toplevel()  
     if mode == "no_attempts":
-        Ameba(root)
+        Ameba(game_window)
     elif mode == "three_attempts":
-        Ameba(root, attempts=3)
+        Ameba(game_window, attempts=3)
 
 
 def show_mode_selection():
-    selection_window = tk.Tk()
+    selection_window = tk.Tk()  
     selection_window.title("Выбор режима игры")
     selection_window.configure(bg='black')
 
@@ -138,12 +139,12 @@ def show_mode_selection():
     label.pack(pady=10)
 
     no_attempts_button = tk.Button(selection_window, text="Играть без попыток", 
-                                   command=lambda: start_game("no_attempts", selection_window),
+                                   command=lambda: [selection_window.destroy(), start_game("no_attempts")],
                                    bg='black', fg='orange', font=("Arial", 12))
     no_attempts_button.pack(pady=5)
 
     three_attempts_button = tk.Button(selection_window, text="Играть с 3 попытками", 
-                                      command=lambda: start_game("three_attempts", selection_window),
+                                      command=lambda: [selection_window.destroy(), start_game("three_attempts")],
                                       bg='black', fg='orange', font=("Arial", 12))
     three_attempts_button.pack(pady=5)
 
