@@ -68,13 +68,13 @@ class Ameba:
         self.last_guess = guess
 
     def get_prompt(self, guess):
-        result = model.invoke(input=f"Число что загадано это{self.secret_number}, я ввел {guess}. Дай краткую подсказку(не более 7 слов), чтобы я смог назвать нужное. Но не говори загаданное число. Ответ на русском языке.")
+        result = model.invoke(input=f"Мне загадали число {self.secret_number}, а я ввел{guess} Дай подсказку на русском языке, которая поможет мне приблизиться к верному числу (максимум 7 слов). Не называй загаданное число! И не давай подсказки, как 'прибвыьте 5', 'поделите на 4' и так далее. Можешь использовать фразы по типу 'Ваше число сильно меньше загаданого', 'Ваше число капельку больше чем загаданное'")
+#       result = model.invoke(input=f"Мне загадали число {self.secret_number}, а я ввел{guess} Дай подсказку на русском языке, которая поможет мне приблизиться к верному числу (максимум 7 слов). Не раскрывай число, можешь использовать, 'ваше число меньше', 'ваше число сильно больше', и так далее")
         print(self.secret_number)
         return result
 
     def update_attempts(self):
         if self.attempts_left > 0:
-            # Находим самую правую красную клетку и закрашиваем её черным
             self.attempts_labels[self.attempts_left - 1].config(bg='black')
             self.attempts_left -= 1
         if self.attempts_left == 0:
